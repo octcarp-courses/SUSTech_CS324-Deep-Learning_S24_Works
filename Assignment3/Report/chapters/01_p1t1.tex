@@ -1,0 +1,47 @@
+\section{Part 1 Task 1}
+
+\subsection{Simple Introduction}
+
+In Assignment 3, we train our model on the same data set, that is, the prediction of the palindrome structure mentioned in Assignment 2.
+
+Of course, in Assignment 2, we tried to use RNN to solve this problem, and the results were not satisfactory:
+the model still performed better for shorter palindrome strings, but the performance for longer strings was somewhat different. Decline, even training results are getting worse.
+Therefore, in this exercise we try to use LSTM (Long Short-Term Memory) \cite{sepp1997long} with better memory ability to solve this problem.
+
+\subsection{LSTM Structure}
+
+\subsubsection{LSTM Formulas}
+
+I build the LTSM with the following formulas:
+
+\begin{align}
+  g^{(t)} &= \tanh(W_{gx}x^{(t)} + W_{gh}h^{(t-1)} + b_{g})\\
+  i^{(t)} &= \sigma(W_{ix}x^{(t)} + W_{ih}h^{(t-1)} + b_{i})\\
+  f^{(t)} &= \sigma(W_{fx}x^{(t)} + W_{fh}h^{(t-1)} + b_{f})\\
+  o^{(t)} &= \sigma(W_{ox}x^{(t)} + W_{oh}h^{(t-1)} + b_{o})\\
+  c^{(t)} &= g^{(t)} \odot i^{(t)} + c^{(t-1)} \odot f^{(t)}\\
+  h^{(t)} &= \tanh(c^{(t)} \odot o^{(t)})\\
+  p^{(t)} &= (W_{ph}h^{(t)} + b_{p})\\
+  \Tilde{y}^{(t)} &= \text{softmax}(p^{(t)})
+\end{align}
+
+where $\odot$ denotes the element-wise multiplication.
+
+The structure is similar to that of the RNN implemented in Assignment 2, but with the addition of three gates: the input gate $i$, the forget gate $f$, and the output gate $o$ (and the input modulation $g$).
+I shall initialise $h^{(0)}$ to the vector of all zeros.
+
+Use the cross-entropy loss over the last time-step:
+
+\begin{equation}
+  \mathcal{L} = -\sum\limits_{k=1}^{K}y_{k}log(\Tilde{y}_{k}^{(T)})
+\end{equation}
+
+where $k$ runs over the classes ($K = 10$ digits in total), $y_k$ is a one-hot encoding vector.
+
+\subsubsection{\texttt{PyTorch} Implementation}
+
+When I implement the structure, for each one among $g$, $i$, $f$, $o$, I use \texttt{nn.Linear} with bias to compute the $x^{(t)}$ part, \texttt{nn.Linear} without bias to compute the $h^{(t-1)}$ part.
+
+In each \texttt{for} loop, for $h$ and $c$, update them with \texttt{torch} notation $*$ and \texttt{torch.tanh}.
+
+Finally, use \texttt{nn.Linear} with bias to compute the $p^{(t)}$, and use \texttt{torch.softmax} to get the output.

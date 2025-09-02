@@ -1,0 +1,138 @@
+\section{Part 1 Task 3}
+
+\subsection{Global Settings}
+
+\subsubsection{Default Parameters}
+
+\begin{itemize}
+  \item \texttt{dnn\_hidden\_units}: $[512, 64]$, comma separated list of number of units in each hidden layer
+  \item \texttt{learning\_rate}: $1\mathrm{e}^{-3}$, learning rate for optimization
+  \item \texttt{max\_epochs}: $150$, number of steps to run trainer
+  \item \texttt{eval\_freq}: $1$, frequency of evaluation on the test set
+  \item \texttt{batch\_size}: $32$, batch size of single train batch
+\end{itemize}
+
+\subsubsection{MLP Structure}
+
+\begin{enumerate}
+  \item $3 \times 32 \times 32$ input
+  \item $3072 \to 512 $ Linear Layer
+  \item $512 \to 512 $ ReLU Layer
+  \item $512 \to 64 $ Linear Layer
+  \item $64 \to 64 $ ReLU Layer
+  \item $64 \to 10 $ Linear Layer
+  \item $10 \to 10$ Softmax Layer
+  \item $10$ output
+\end{enumerate}
+
+\subsection{Result Visualization}
+
+Fig \ref{fig:p1t3_cifar_adam} show the accuracy and loss in CIFAR-10 dataset with Adam optimizer, while fig \ref{fig:p1t3_cifar_sgd} is SGD.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=1\textwidth]{img/Part1/cifar_mlp_b32_adam.png}
+  \caption{MLP CIFAR-10 Curve}
+  \label{fig:p1t3_cifar_adam}
+\end{figure}
+
+\subsection{Result Analysis}
+
+\subsubsection{MLP Analysis}
+
+In the MLP, I choose $3 \times 32 \times 32$ as input. Because for CIFAR-10 picture, it has $32 \times 32$ as the pixel width and height.
+In the picture, each pixel has red, green, blue 3 channels. Therefore, I got the $3072$ feature inputs.
+
+In hidden layer, I set two hidden layers, there size is 512, 64.
+As a simple dataset, I don't want to add too complex hidden layers for MLP, so I choose these hidden layer size.
+
+Finally, I got output of size 10, indicating the possibility of each class in CIFAR-10, and I choose the max one as the final classification result.
+
+\subsubsection{Feature Analysis}
+
+Overall, we can find a very interesting situation: as the number of training times continues to increase, the accuracy of the training set quickly reached 90\%, while the accuracy of the test set stagnated at 50\% after a brief rise.
+Finally, it has been unable to rise. And by carefully observing the Loss curve, we will also find an additional fact: the Loss of the test set is even rising!
+
+This leads to an obvious concept: overfitting. With continuous training, MLP overfits the training data, and its parameters are constantly customized according to the training data,
+but it loses generalization and cannot well extract some general features in the CIFAR-10 data set.
+
+So why is there such a big deviation in the performance of MLP on CIFAR-10 compared to the classification problem of Assignment1?
+
+Here are a few possible reasons I guess:
+
+\begin{itemize}
+  \item {\textbf{Fully connected features}:
+      MLP is a fully connected structure, which means that everything in the image data will affect the final result.
+      The image data may contain edges, interference, and other data that are not helpful or even disruptive to the analysis results, thus causing a lot of problems in the MLP learning process and overfitting.
+    }
+  \item {\textbf{The structure of hidden layers is too simple}:
+      I only set up two hidden layers [512, 64].
+      Such a simple structure cannot extract the deep features of the image well, which leads to a decrease in the generalization ability of the model and leads to overfitting.
+    }
+\end{itemize}
+
+In short, although MLP classification was tried on CIFAR-10, due to some objective limitations, its actual effect was not very satisfactory.
+In the Part 2, I will try to use CNN to complete the CIFAR-10 image classification problem.
+
+\section{Part 2 Task 1}
+
+\subsection{Simple Introduction}
+
+In this task, I need to create a simple CNN. The structure is listed in lecture slide.
+I analyze the layers feature and compute the input and output shape in this part.
+
+\subsection{CNN Structure}
+
+The structure Defined by lecture slide, fig \ref{fig:p2_cnn_structure}:
+
+For pooling layer, $k$ stand for kernel size, $s$ stand for stride, $p$ stand for padding.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.5\textwidth]{img/Part2/CNN_structure.png}
+  \caption{CNN Structure Detail}
+  \label{fig:p2_cnn_structure}
+\end{figure}
+
+\subsection{Input Output Size}
+
+\begin{itemize}
+  \item The convolution layer change the channel number.
+
+  \item {
+      The height and width computation for pooling layer is:
+
+      $$ H_{out} = \left\lfloor \frac{H_{in} - k_{h} + 2 \times p}{s} \right\rfloor + 1 $$
+
+      $$ W_{out} = \left\lfloor \frac{W_{in} - k_{w} + 2 \times p}{s} \right\rfloor + 1 $$
+    }
+
+  \item The ReLU layer does not change the shape of  data.
+\end{itemize}
+
+And table \ref{tab:network_layers} shows the final output for each layer which change the data shape:
+
+\begin{table}[!ht]
+  \centering\caption{Output of each layer in CNN}
+  \label{tab:network_layers}
+  \begin{tabular}{|c|c|}
+    \hline
+    \textbf{Layer} & \textbf{Output Size} \\
+    \hline
+    Conv2d & $32 \times 32 \times 64$ \\ \hline
+    MaxPool & $16 \times 16 \times 64$ \\ \hline
+    Conv2d & $16 \times 16 \times 128$ \\ \hline
+    MaxPool & $8 \times 8 \times 128$ \\ \hline
+    Conv2d & $8 \times 8 \times 256$ \\ \hline
+    Conv2d & $8 \times 8 \times 256$ \\ \hline
+    MaxPool & $4 \times 4 \times 256$ \\ \hline
+    Conv2d & $4 \times 4 \times 512$ \\ \hline
+    Conv2d & $4 \times 4 \times 512$ \\ \hline
+    MaxPool & $2 \times 2 \times 512$ \\ \hline
+    Conv2d & $2 \times 2 \times 512$ \\ \hline
+    Conv2d & $2 \times 2 \times 512$ \\ \hline
+    MaxPool & $1 \times 1 \times 512$ \\ \hline
+    Flatten & $512$ \\ \hline
+    Linear & $10$ \\ \hline
+  \end{tabular}
+\end{table}

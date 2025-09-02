@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 
+from torch.utils.data import DataLoader
+
 from pytorch_mlp import MLP
 from tqdm import tqdm
 
@@ -8,42 +10,37 @@ DEFAULT_MAX_EPOCH = 150
 DEFAULT_EVAL_FREQ = 1
 DEFAULT_BATCH_SIZE = 32
 DEFAULT_LEARNING_RATE = 1e-3
-DEFAULT_OPTIMIZER = 'ADAM'
+DEFAULT_OPTIMIZER = "ADAM"
 
 
-def accuracy(predictions, labels):
-    predicted_classes = torch.argmax(predictions)
-    targets_classes = torch.argmax(labels)
-    correct = torch.sum(predicted_classes == targets_classes)
-    acc = correct / predictions.shape[0]
-    return acc
-
-
-def train(train_loader, test_loader,
-          max_epoch=DEFAULT_MAX_EPOCH,
-          eval_freq=DEFAULT_EVAL_FREQ,
-          learning_rate=DEFAULT_LEARNING_RATE,
-          optimizer_type=DEFAULT_OPTIMIZER,
-          validate_loader=None):
+def train(
+    train_loader=DataLoader,
+    test_loader=DataLoader,
+    max_epoch=DEFAULT_MAX_EPOCH,
+    eval_freq=DEFAULT_EVAL_FREQ,
+    learning_rate=DEFAULT_LEARNING_RATE,
+    optimizer_type=DEFAULT_OPTIMIZER,
+    validate_loader=None,
+) -> tuple[list[int], list[float], list[float], list[float], list[float]]:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = MLP(n_inputs=32 * 32 * 3, n_hidden=[512, 64], n_classes=10)
     model = model.to(device)
 
-    if optimizer_type == 'ADAM':
+    if optimizer_type == "ADAM":
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    elif optimizer_type == 'SGD':
+    elif optimizer_type == "SGD":
         optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     loss_fn = nn.CrossEntropyLoss().to(device)
 
-    eval_epochs_l = []
-    train_acc_l = []
-    test_acc_l = []
-    train_loss_l = []
-    test_loss_l = []
+    eval_epochs_l: list[int] = []
+    train_acc_l: list[float] = []
+    test_acc_l: list[float] = []
+    train_loss_l: list[float] = []
+    test_loss_l: list[float] = []
 
     for epoch in tqdm(range(max_epoch)):
         train_correct = 0
@@ -88,8 +85,10 @@ def train(train_loader, test_loader,
             train_loss_l.append(train_loss)
             test_loss_l.append(test_loss)
 
-    print(f'After {max_epoch} Epochs: ')
-    print(f'Train Acc: {train_acc_l[-1] * 100:.4f}%, Test Acc: {test_acc_l[-1] * 100:.4f}%')
-    print(f'Train Loss: {train_loss_l[-1]:.6f}, Test Loss: {test_loss_l[-1]:.6f}')
+    print(f"After {max_epoch} Epochs: ")
+    print(
+        f"Train Acc: {train_acc_l[-1] * 100:.4f}%, Test Acc: {test_acc_l[-1] * 100:.4f}%"
+    )
+    print(f"Train Loss: {train_loss_l[-1]:.6f}, Test Loss: {test_loss_l[-1]:.6f}")
 
     return eval_epochs_l, train_acc_l, test_acc_l, train_loss_l, test_loss_l

@@ -1,7 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import numpy as np
 import os
@@ -14,20 +10,22 @@ from cnn_model import CNN
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import DataLoader
 
 # Default constants
-LEARNING_RATE_DEFAULT = 1e-4
-BATCH_SIZE_DEFAULT = 32
-MAX_EPOCHS_DEFAULT = 200
-EVAL_FREQ_DEFAULT = 1
-OPTIMIZER_DEFAULT = 'ADAM'
-DATA_DIR_DEFAULT = '../data'
-MODEL_PARA_PATH_DEFAULT = ''
+LEARNING_RATE_DEFAULT: float = 1e-4
+BATCH_SIZE_DEFAULT: int = 32
+MAX_EPOCHS_DEFAULT: int = 200
+EVAL_FREQ_DEFAULT: int = 1
+OPTIMIZER_DEFAULT: str = "ADAM"
+DATA_DIR_DEFAULT: str = "../data"
+MODEL_PARA_PATH_DEFAULT: str = ""
+EXP_FILENAME: str = "results/latest.csv"
 
 FLAGS = None
 
 
-def accuracy(predictions, targets):
+def accuracy(predictions, targets) -> None:
     """
     Computes the prediction accuracy, i.e., the average of correct predictions
     of the network.
@@ -38,49 +36,50 @@ def accuracy(predictions, targets):
         accuracy: scalar float, the accuracy of predictions.
     """
     pass
-    return accuracy
 
 
-def train(train_loader, test_loader,
-          model_para_path=MODEL_PARA_PATH_DEFAULT,
-          max_epoch=MAX_EPOCHS_DEFAULT,
-          eval_freq=EVAL_FREQ_DEFAULT,
-          learning_rate=LEARNING_RATE_DEFAULT,
-          optimizer_type=OPTIMIZER_DEFAULT
-          ):
+def train(
+    train_loader: DataLoader,
+    test_loader: DataLoader,
+    model_para_path: str = MODEL_PARA_PATH_DEFAULT,
+    max_epoch: list[int] = MAX_EPOCHS_DEFAULT,
+    eval_freq: list[int] = EVAL_FREQ_DEFAULT,
+    learning_rate: float = LEARNING_RATE_DEFAULT,
+    optimizer_type: str = OPTIMIZER_DEFAULT,
+) -> tuple[list[int], list[float], list[float], list[float], list[float]]:
     """
     Performs training and evaluation of MLP model.
     NOTE: You should the model on the whole test set each eval_freq iterations.
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f'Device: {torch.cuda.get_device_name(device)}')
+    print(f"Device: {torch.cuda.get_device_name(device)}")
 
     cnn = CNN(3, 10).to(device)
 
-    if model_para_path != '':
+    if model_para_path != "":
         cnn.load_state_dict(torch.load(model_para_path))
-        print(f'Loaded model from {model_para_path}')
+        print(f"Loaded model from {model_para_path}")
 
     loss_fn = nn.CrossEntropyLoss().to(device)
-    if optimizer_type == 'ADAM':
+    if optimizer_type == "ADAM":
         optimizer = optim.Adam(cnn.parameters(), lr=learning_rate)
-    elif optimizer_type == 'SGD':
+    elif optimizer_type == "SGD":
         optimizer = optim.SGD(cnn.parameters(), lr=learning_rate, momentum=0.9)
-    elif optimizer_type == 'RMS':
+    elif optimizer_type == "RMS":
         optimizer = optim.RMSprop(cnn.parameters(), lr=learning_rate)
     else:
         optimizer = optim.Adam(cnn.parameters(), lr=learning_rate)
 
-    eval_epochs = []
-    train_acc_l = []
-    test_acc_l = []
-    train_loss_l = []
-    test_loss_l = []
+    eval_epochs: list[int] = []
+    train_acc_l: list[float] = []
+    test_acc_l: list[float] = []
+    train_loss_l: list[float] = []
+    test_loss_l: list[float] = []
 
     for epoch in tqdm(range(max_epoch)):
-        train_total = 0
-        train_correct = 0
-        train_loss = 0.0
+        train_total: int = 0
+        train_correct: int = 0
+        train_loss: float = 0.0
 
         cnn.train()
         for data in train_loader:
@@ -97,9 +96,9 @@ def train(train_loader, test_loader,
             train_loss += loss.item()
 
         if epoch % eval_freq == 0 or epoch == max_epoch - 1:
-            test_correct = 0
-            test_total = 0
-            test_loss = 0.0
+            test_correct: int = 0
+            test_total: int = 0
+            test_loss: float = 0.0
 
             cnn.eval()
             with torch.no_grad():
@@ -124,6 +123,7 @@ def train(train_loader, test_loader,
             train_loss_l.append(train_loss)
             test_loss_l.append(test_loss)
 
+    cnn.eval()
     with torch.no_grad():
         class_correct = torch.zeros(10).to(device)
         class_total = torch.zeros(10).to(device)
@@ -152,27 +152,46 @@ def train(train_loader, test_loader,
 
         test_classes_acc = (class_correct / class_total).tolist()
 
-    if model_para_path != '':
+    if model_para_path != "":
         torch.save(cnn.state_dict(), model_para_path)
-        print(f'Saved model to {model_para_path}')
+        print(f"Saved model to {model_para_path}")
 
     # save data to .csv
-    filename = 'results/latest.csv'
-    with open(filename, 'w', newline='') as csvfile:
-        fieldnames = ['Epoch', 'Train Acc', 'Test Acc', 'Train Loss', 'Test Loss']
+
+    with open(EXP_FILENAME, "w", newline="") as csvfile:
+        fieldnames = ["Epoch", "Train Acc", "Test Acc", "Train Loss", "Test Loss"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for epoch, train_acc, test_acc, train_loss, test_loss in zip(
-                eval_epochs, train_acc_l, test_acc_l, train_loss_l, test_loss_l):
-            writer.writerow({'Epoch': epoch, 'Train Acc': train_acc, 'Test Acc': test_acc,
-                             'Train Loss': train_loss, 'Test Loss': test_loss})
-    print(f"Save data to {filename}")
+            eval_epochs, train_acc_l, test_acc_l, train_loss_l, test_loss_l
+        ):
+            writer.writerow(
+                {
+                    "Epoch": epoch,
+                    "Train Acc": train_acc,
+                    "Test Acc": test_acc,
+                    "Train Loss": train_loss,
+                    "Test Loss": test_loss,
+                }
+            )
+    print(f"Save data to {EXP_FILENAME}")
 
-    print(f'After {max_epoch} Epochs:')
-    print(f'Train Acc: {train_acc_l[-1] * 100:.4f}%, Test Acc: {test_acc_l[-1] * 100:.4f}%')
-    print(f'Train Loss: {train_loss_l[-1]:.6f}, Test Loss: {test_loss_l[-1]:.6f}')
+    print(f"After {max_epoch} Epochs:")
+    print(
+        f"Train Acc: {train_acc_l[-1] * 100:.4f}%, Test Acc: {test_acc_l[-1] * 100:.4f}%"
+    )
+    print(f"Train Loss: {train_loss_l[-1]:.6f}, Test Loss: {test_loss_l[-1]:.6f}")
 
-    return eval_epochs, train_acc_l, test_acc_l, train_loss_l, test_loss_l, train_classes_acc, test_classes_acc
+    return (
+        eval_epochs,
+        train_acc_l,
+        test_acc_l,
+        train_loss_l,
+        test_loss_l,
+        train_classes_acc,
+        test_classes_acc,
+    )
+
 
 # def main():
 #     """

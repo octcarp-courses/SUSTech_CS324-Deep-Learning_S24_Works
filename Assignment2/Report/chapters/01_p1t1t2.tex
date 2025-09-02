@@ -1,0 +1,104 @@
+\section{Part 1 Task 1 \& 2}
+
+\subsection{Simple Introduction}
+
+In these tasks, I need to create a simple MLP by \texttt{PyTorch}.
+And compare the training situation with the realization by \texttt{NumPy}.
+
+The MLP structure just as which in Assignment 1, and I'll compare \texttt{torch} and \texttt{numpy} implementation in \texttt{make\_moon} and two other datasets.
+
+\subsection{\texttt{torch} Feature Analysis}
+
+In torch, we could use the pre-defined utils.
+
+For exmaple: common layers, such as linear layer and ReLU layer, can simply use \texttt{nn.Linear} and \texttt{nn.ReLU}, they have there own \texttt{forward()} functions.
+Once they are initialization with \texttt{nn.Sequential()}, we can directly get output from input by passing it through each layer one by one.
+
+Use \texttt{nn.CrossEntropyLoss()} to compute the Cross Entropy loss of the model.
+Through \texttt{torch.optim}, we can adjust parameters in layers, implement backward propagation.
+
+\subsection{Global Settings}
+
+\subsubsection{Default Parameters}
+
+\begin{itemize}
+  \item \texttt{dnn\_hidden\_units}: $[20]$, comma separated list of number of units in each hidden layer
+  \item \texttt{learning\_rate}: $1\mathrm{e}^{-2}$, learning rate for optimization
+  \item \texttt{max\_steps}: $1500$, number of steps to run trainer
+  \item \texttt{eval\_freq}: $10$, frequency of evaluation on the test set
+  \item \texttt{batch\_size}: $800$, batch size of single train batch
+\end{itemize}
+
+\subsubsection{MLP Structure}
+
+\begin{enumerate}
+  \item $2$ input
+  \item $2 \to 20$ Linear Layer
+  \item $20 \to 20$ ReLU Layer
+  \item $20 \to 2$ Linear Layer
+  \item $2 \to 2$ Softmax Layer
+  \item One hot output and Cross Entropy loss function
+  \item Gradient descent strategy: BGD idea actually, refer to \ref{sec:p1t1_ana_loss}.
+\end{enumerate}
+
+\subsubsection{Dataset Generation}
+
+I use code to visually demonstrate the generation method of the dataset.
+
+\begin{lstlisting}[language=Python]
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.datasets import *
+
+x, y = [], [] # input and label
+if type_id == 1:
+    self.type_name = 'moon'
+    x, y = make_moons(n_samples=1000, noise=0.05)
+elif type_id == 2:
+    self.type_name = 'blobs'
+    x, y = make_blobs(n_samples=1000, centers=2, cluster_std=3)
+elif type_id == 3:
+    self.type_name = 'gaussian_quantiles'
+    x, y = make_gaussian_quantiles(n_samples=1000, n_classes=2)
+y = OneHotEncoder(sparse_output=False).fit_transform(y.reshape(-1, 1))
+\end{lstlisting}
+
+\subsection{Result Visualization}
+
+There are 3 figures, fig \ref{fig:p1t1_moon} for \texttt{make\_moon}, fig \ref{fig:p1t1_blobs} for \texttt{make\_blobs}, fig \ref{fig:p1t1_gaussian_quantiles} for \texttt{make\_gaussian\_quantiles},
+
+\begin{figure}[!htp]
+  \centering
+  \begin{subfigure}[b]{0.85\textwidth}
+    \includegraphics[width=\textwidth]{img/Part1/data_moon.png}
+    \caption{Blobs Data}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.9\textwidth}
+    \includegraphics[width=\textwidth]{img/Part1/acc_moon.png}
+    \caption{Blobs Accuracy}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.9\textwidth}
+    \includegraphics[width=\textwidth]{img/Part1/loss_moon.png}
+    \caption{Blobs Loss}
+  \end{subfigure}
+  \caption{Blobs numpy \& torch}
+  \label{fig:p1t1_moon}
+\end{figure}
+
+\subsection{Result Analysis}
+
+\subsubsection{Overall Analysis}
+
+Through different images for several different datasets, it can be observed that despite the different implementation approaches of the two models,
+as long as the model architecture remains constant, their characteristic curves exhibit similarities, both in terms of accuracy and loss.
+This mutual approve both of my implementations within this simple MLP structure are reasonable.
+
+\subsubsection{Dataset Analysis}
+
+Simple analysis: The model has different performance in three data sets: the data set of blobs is widely separated, and it is easy to achieve high performance; moon is second.
+For gaussian quantiles, intuitively speaking, the data distribution of it cannot be divided by a simple decision boundary, and accordingly the accuracy increases relatively slowly with training.
+
+\subsubsection{Loss Analysis}\label{sec:p1t1_ana_loss}
+
+Although I utilized \texttt{optim.SGD()} as the optimizer, I actually realize the BGD. I did not perform any data splitting during input; instead, I fed all inputs as a whole to the MLP for computation.
+Therefore, in practice, what I achieved was finding the global optimum through gradient descent, which is the concept of Batch Gradient Descent (BGD).
+From this, it can be inferred that the descent of the training loss curve is smooth, devoid of any fluctuations.

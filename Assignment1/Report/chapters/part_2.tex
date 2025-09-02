@@ -1,0 +1,258 @@
+\section{Part 2}
+
+
+\subsection{Problem Analysis}
+
+In this part, I need to create a a multi-layer perceptron(MLP) by Numpy, generate a given dataset and do the classification problem correctly.
+
+\subsubsection{Simple Introduction}
+
+In the second part, I use scikit-learn package and generate by \texttt{make\_moon} function.
+Then, I create a dataset of 1000 two-dimensional points. Let $S$ denote the dataset, i.e., the set of tuples $\{(x^{(0),s}, t^{s})\}_{s=1}^{S}$, where $x^{(0),s}$ is the $s$-th element of the dataset and $t^{s}$ is its label.
+And I need to use \texttt{OneHotEncoder} to encode the label.
+
+After that, I need to implement the MLP and make correct classification for this problem.
+
+\subsubsection{MLP Structure}
+
+Let $d_{0}$ be the dimension of the input space and $d_{n}$ the dimension of the output space.
+The network I build have $N$ layers (including the output layer).
+In particular, the structure will be as follows:
+
+\begin{itemize}
+    \item {Each layer $l = 1, \cdots , N$ first applies the affine mapping
+    $$
+        \tilde{x}^{(l)} = W^{(l)}x^{(l-1)}+b^{(l)}
+    $$
+    where $W^{(l)} \in \mathbb{R}^{d_{l}\times d_{(l-1)}}$ is the matrix of the weight parameters and $b^{(l)} \in \mathbb{R}^{d_{l}}$ is the vector of biases.
+    Given $\tilde{x}^{(l)}$, the activation of the $l$-th layer is computed using a ReLU unit
+        $$        
+            x^{(l)} = \max(0,\tilde{x}^{(l)})
+        $$
+    }
+    \item {The output layer (i.e., the $N$-th layer) first applies the affine mapping
+            $$
+                \tilde{x}^{(N)} = W^{(N)}x^{(N-1)} + b^{(N)}
+            $$
+        and then uses the softmax activation function (instead of the ReLU of the previous layers) to compute a valid probability mass function (pmf)
+            $$
+                x^{(N)} = \text{softmax}(\tilde{x}^{(N)}) = \frac{\exp(\tilde{x}^{(N)})}{\sum_{i=1}^{d_{N}}\exp(\tilde{x}^{(N)})_{i}}
+            $$
+        Note that both max and exp are element-wise operations.
+    }
+    \item {Finally, compute the cross entropy loss L between the predicted and the actual label,
+        $$
+            L(x^{(N)},t) = -\sum_{i}t_{i}\log{x_{i}^{(N)}}    
+        $$
+    }
+\end{itemize}
+
+Particularly, in this assignment, there is only one hidden layer, the final structure is:
+
+\begin{enumerate}
+    \item $2$ input
+    \item $2 \rightarrow 20$ Linear Layer
+    \item $20 \rightarrow 20$ ReLU Layer
+    \item $20 \rightarrow 2$ Linear Layer
+    \item $2 \rightarrow 2$ Softmax Layer
+    \item Output and Cross Entropy loss function
+\end{enumerate}
+
+\subsubsection{Default Parameters}
+
+\begin{itemize}
+    \item \texttt{dnn\_hidden\_units}: $[20]$, comma separated list of number of units in each hidden layer
+    \item \texttt{learning\_rate}: $1\mathrm{e}^{-2}$, learning rate for optimization
+    \item \texttt{max\_steps}: $1500$, number of epochs to run trainer
+    \item \texttt{eval\_freq}: $10$, frequency of evaluation on the test set
+\end{itemize}
+
+\subsection{Forward and Backward Propagation Functions}
+
+\subsubsection{Linear Layer}
+
+Forward propagation:
+
+$$
+z = Wx + b
+$$
+
+\begin{itemize}
+    \item $W$: weight matrix
+    \item $x$: input vector
+    \item $b$: bias vector
+\end{itemize}
+
+Backward propagation:
+
+$$ \frac{\partial L}{\partial W} = \frac{\partial L}{\partial z} x^T $$
+$$ \frac{\partial L}{\partial b} = \frac{\partial L}{\partial z} $$
+$$ \frac{\partial L}{\partial x} = W^T \frac{\partial L}{\partial z} $$
+
+
+\begin{itemize}
+    \item $L$: The Loss function
+    \item $\frac{\partial L}{\partial z}$: gradient of the loss with respect to the linear layer output
+\end{itemize}
+
+
+\subsubsection{ReLU Layer}
+
+Forward propagation:
+
+$$ y = \max(0, x) $$
+
+\begin{itemize}
+    \item $x$: input vector
+\end{itemize}
+
+Backward propagation:
+
+$$
+grad(x)=
+\left\{
+    \begin{aligned}
+        1 && \text{if $x \geq 0$}\\
+        0 && \text{if $x < 0$}
+    \end{aligned}
+\right.
+$$
+
+$$ \frac{\partial L}{\partial x} = \frac{\partial L}{\partial y} \cdot grad(x) $$
+
+\subsubsection{Softmax Layer}
+
+Forward propagation:
+
+$$ \hat{y}_i = \frac{e^{z_i}}{\sum_{j=1}^{K} e^{z_j}} $$
+
+\begin{itemize}
+    \item $z_i$: $i$-th element of the input vector
+    \item $K$: number of classes, that is $2$
+\end{itemize}
+
+Backward propagation:
+
+The backward pass for softmax is often directly integrated with CrossEntropy for simplicity.
+
+\subsubsection{Cross-entropy Loss}
+
+Forward propagation:
+$$ L = -\sum_{i=1}^{K} y_i \log(\hat{y}_i) $$
+
+\begin{itemize}
+    \item $y_i$: true label (one-hot encoded)
+    \item $\hat{y}_i$: predicted probability for class $i$
+\end{itemize}
+
+Backward propagation:
+$$ \frac{\partial L}{\partial z_i} = \hat{y}_i - y_i $$
+
+\begin{itemize}
+    \item  $y_i$: true label (one-hot encoded)
+\end{itemize}
+
+\subsection{Results and Display}
+
+\subsubsection{Data Visualization}
+
+Figure \ref{fig:p2sample} show the visualization of the whole data set.
+$1000$ positive data and $1000$ negative data.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.6\textwidth]{img/Part2/sample_data.png}
+    \caption{Moon Sample Data}
+    \label{fig:p2sample}
+\end{figure}
+
+\subsubsection{My Additional parameters}
+
+\begin{itemize}
+    \item \texttt{batch\_size}: Positive value for Batch Gradient Descent and negative value for Mini-BGD (absolute value as batch size).
+\end{itemize}
+
+\subsubsection{Test Figure}
+
+In our training, epoch is given and fixed, which means that the smaller the batch size, the more iterations are required,
+and large batches of parallel calculations are lost, which may take longer time.
+
+Figure \ref{fig:p2batch1}, \ref{fig:p2batch10}, \ref{fig:p2batch100}, \ref{fig:p2batch800} show SGD, batch size 10, 100, 800 for 1500 epoch respectively.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{img/Part2/curve_batch_1.png}
+    \caption{SGD}
+    \label{fig:p2batch1}
+\end{figure}
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{img/Part2/curve_batch_10.png}
+    \caption{BGD size 10}
+    \label{fig:p2batch10}
+\end{figure}
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{img/Part2/curve_batch_100.png}
+    \caption{BGD size 100}
+    \label{fig:p2batch100}
+\end{figure}
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{img/Part2/curve_batch_800.png}
+    \caption{BGD size 800}
+    \label{fig:p2batch800}
+\end{figure}
+
+\subsection{Results and Analysis}
+
+Because I mainly focused on the analysis of SGD and BGD, I did not consider changing other default parameters in this part.
+They maintain consistent values.
+
+\subsubsection{Characteristic Analysis}
+
+In general, SGD and smaller batche sizes mean faster training: less data is involved in each iteration, making iterations faster.
+But in this Assignment, epoch is given, which means that although the data in each iteration becomes less, we need more iterations to complete the traversal of the entire sample.
+This will lead to the loss of parallel computing opportunities for large matrices, a decrease in the overall utilization of the computing core, and a significant increase in time consumption.
+
+\subsubsection{SGD Analysis}
+
+For SGD, it declines very quickly in each epoch: in each epoch, it iterates 800 times and updates the weights 800 times. At first glance, it has more opportunities for decline than large batches. However, we can see that after experiencing a rapid decline in the initial stage, its loss curve has experienced great fluctuations.
+
+This is because each time gradient descent is performed on a single sample, it is easy to fall into a local optimal.
+In the fitting of a single sample, the individual samples may interfere with each other (e.g, the previous one sample updates a certain weight value by +1, and the latter one then updates this value by -1),
+resulting in a loss that cannot be reduce at each epoch, even lead to an increase in loss.
+
+However, under the large number of iterations, SGD finally found an opportunity to rapidly increase the model fitting degree.
+Therefore, after two rapid fittings to the training set, the loss of the model has been greatly reduced and the accuracy has reached a relatively good state.
+
+\subsubsection{BGD Analysis}
+
+Different from the overview in the previous section, in this section I will highlight the impact of batch size on training characteristics in several aspects.
+
+\textbf{Attention: everything is based on the epoch is given.}
+
+\begin{itemize}
+    \item \textbf{Training speed}: As the batch size continues to increase, the number of iterations required begins to decrease, which makes the training speed significantly faster.
+    \item \textbf{Loss}: As the batch size increases, it is easier for the model to find the global optimal point in each iteration update.
+    Although the loss decreases less for each epoch (because the number of updates becomes less), the model can easily find the global optimal point of gradient descent, which makes the loss decrease more smoothly with almost no fluctuations.
+    \item \textbf{Accuracy}: As the batch size becomes larger, the final accuracy limit is not as good as SGD because the number of iterations becomes smaller.
+    However, the training accuracy of the model is still rising steadily.
+    If there are more iteration opportunities, I believe it can reach a higher level.
+    \item \textbf{Overfitting}: This is one of my observations: although the training accuracy of BGD with large batch size is constantly getting higher, its accuracy on the test set is not necessarily the same.
+    BGD has lower generalization ability than SGD, and the risk of overfitting to the training set will be higher.
+\end{itemize}
+
+\subsubsection{Additional Analysis}
+
+The appendix includes more mini-BGD test data and is updated with each iteration.
+I can learn more about the characteristics of each iteration of SGD and mini-BGD: the overall convergence speed is fast, but the fluctuation range is really large.
+
+\subsection{Simple Conclusion}
+
+In this part, I implemented a MLP.
+I learned about the hidden layer, softmax layer and cross-entropy loss function, and their corresponding forward propagation and back propagation formulas.
+In the comparison of different batch sizes, we learned about the various characteristics and principles hidden in training.

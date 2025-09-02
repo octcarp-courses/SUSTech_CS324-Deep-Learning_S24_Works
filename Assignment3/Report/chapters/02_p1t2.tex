@@ -1,0 +1,81 @@
+\section{Part 1 Task 2}
+
+\subsection{Simple Introduction}
+
+In this part, I will train my LSTM on palindrome dataset with default parameters, and compare the different result with changing the \texttt{input\_length}.
+
+\subsection{Default Parameters}
+
+\begin{itemize}
+  \item \texttt{input\_length}: $4$, length of input sequence
+  \item \texttt{input\_dim}: $1$, dimension of input data
+  \item \texttt{num\_classes}: $10$, number of classes in the classification task
+  \item \texttt{num\_hidden}: $128$, number of hidden units in the neural network
+  \item \texttt{batch\_size}: $128$, batch size for training
+  \item \texttt{learning\_rate}: $0.001$, learning rate for optimization
+  \item \texttt{max\_epoch}: $100$, maximum number of epochs to train the model
+  \item \texttt{max\_norm}: $10$, maximum norm constraint for gradient clipping
+  \item \texttt{data\_size}: $100000$, size of the dataset
+  \item \texttt{portion\_train}: $0.8$, portion of the dataset used for training
+\end{itemize}
+
+I will tested the training efficiency under different $T$ values (i.e. \texttt{input\_length} + 1).
+
+\subsection{Result Visualization}
+
+Table \ref{tab:p1_res_para} shows different parameters and corresponding figure.
+
+\begin{table}[!h]
+  \centering\caption{Different Parameters and Result}
+  \label{tab:p1_res_para}
+  \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Fig ID} & $T$ & \textbf{Changed Parameters} \\
+    \hline
+    Fig \ref{fig:p1_t5_default} & 5 & Default Parameters \\ \hline
+    Fig \ref{fig:p1_t20_default} & 20 & Default Parameters \\ \hline
+    Fig \ref{fig:p1_t5_lr_change} & 5 & Change leaning rate to $1\mathrm{e}^{-2}$ and $1\mathrm{e}^{-4}$ \\ \hline
+    Fig \ref{fig:p1_t20_lr_change} & 20 & Change leaning rate to $1\mathrm{e}^{-2}$ and $1\mathrm{e}^{-4}$ \\ \hline
+    Fig \ref{fig:p1_t30} & 30 & Change leaning rate to $1\mathrm{e}^{-4}$ \\ \hline
+    Fig \ref{fig:p1_t20_rnn} & 20 & Assignment 2 RNN Network \\ \hline
+  \end{tabular}
+\end{table}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=1\textwidth]{img/part1/LSTM_train_t5_default.png}
+  \caption{$T = 5$ Default Curve}
+  \label{fig:p1_t5_default}
+\end{figure}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=1\textwidth]{img/part1/LSTM_train_t20_default.png}
+  \caption{$T = 20$ Default Curve}
+  \label{fig:p1_t20_default}
+\end{figure}
+
+\subsection{Result Analysis}
+
+\subsubsection{Overall Analysis}
+
+We can find that compared to RNN, LSTM not only achieves a better upper limit of accuracy on long inputs, but also has a significantly improved convergence speed.
+Compared with the original RNN structure, we can reasonably speculate that LSTM can achieve better training results on longer sequence inputs.
+
+\subsubsection{Learning Rate Analysis}
+
+By changing variables, especially the learning rate, we also found more interesting results.
+\begin{itemize}
+  \item For shorter inputs, a lower learning rate converges slower and has poorer learning effects; a higher learning rate can speed up the convergence and reach a higher upper limit of accuracy;
+  \item For longer inputs, a lower learning rate can eventually reach a higher upper limit of accuracy; while a higher learning rate leads to model degradation, and the prediction effect fluctuates and becomes worse.
+\end{itemize}
+
+Here are the possible explanations I can think of for these situations:
+
+\begin{itemize}
+  \item Increasing the learning rate might help the model converge faster, especially early in training. For shorter inputs, a higher learning rate means faster and more efficient convergence.
+  \item{ Reducing the learning rate can help improve the stability of the model and reduce instability during the training process.
+      Especially when the sequence length increases, problems such as vanishing/exploding gradient are more likely to occur.
+      By reducing the learning rate, the magnitude of parameter updates can be reduced to better deal with these problems.
+    }
+\end{itemize}

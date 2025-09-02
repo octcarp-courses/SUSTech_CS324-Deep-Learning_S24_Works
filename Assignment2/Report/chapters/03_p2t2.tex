@@ -1,0 +1,154 @@
+\section{Part 2 Task 2}
+
+\subsection{Simple Introduction}
+
+In this part, I will train my CNN on CIFAR-10 dataset with default parameters, and compare the different result with changing parameters following the single variable principle.
+
+\subsection{Default Parameters}
+
+\begin{itemize}
+    \item \texttt{optimizer\_type}: 'ADAM' (indicating \texttt{torch.optim.Adam}), type of optimizer for the model training
+    \item \texttt{learning\_rate}: $1\mathrm{e}^{-4}$, learning rate for optimization
+    \item \texttt{max\_epochs}: $200$, number of epochs to run trainer
+    \item \texttt{eval\_freq}: $1$, frequency of evaluation on the test set
+    \item \texttt{batch\_size}: $32$, batch size of single train batch
+\end{itemize}
+
+\subsection{Result Visualization}
+
+Actually, in the beginning of this part, I train $1000+$ epochs to get the result. But I found that the training accuracy will converge after $200$ epochs.
+So follow TA’s explanation, I use $200$ epoch for the rest to get results faster.
+
+Table \ref{tab:p2_res_para} shows different parameters and corresponding figure.
+
+\begin{table}[!h]
+\centering\caption{Different Parameters and Result}
+\label{tab:p2_res_para}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Fig ID} & \textbf{Single Variable Content} \\
+\hline
+Fig \ref{fig:p2_default} & Default Parameters \\ \hline
+Fig \ref{fig:p2_sgd} & Change optimizer to \texttt{torch.optim.SGD} \\ \hline
+Fig \ref{fig:p2_RMS} & Change optimizer to \texttt{torch.optim.RMSprop} \\ \hline
+Fig \ref{fig:p2_lr_1e-3} & Change learning rate to $1\mathrm{e}^{-3}$ \\ \hline
+Fig \ref{fig:p2_lr_5e-2} & Change learning rate to $5\mathrm{e}^{-2}$ \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[!htp]
+  \centering
+  \begin{subfigure}[b]{1\textwidth}
+    \includegraphics[width=\textwidth]{img/Part2/curve_cnn_default.png}
+    \caption{Accuracy and Loss}
+  \end{subfigure}
+  \begin{subfigure}[b]{1\textwidth}
+    \includegraphics[width=\textwidth]{img/Part2/acc_cnn_class_default.png}
+    \caption{Class Accuracy}
+  \end{subfigure}
+  \caption{Default Parameters}
+  \label{fig:p2_default}
+\end{figure}
+
+\subsection{Result Analysis}
+
+\subsubsection{Overall Analysis}
+
+In the following sections, unless specified, the accuracy refers to the test accuracy by default.
+
+Comparing with MLP, we can clearly find that the test accuracy of CNN has been significantly improved.
+Not only has the accuracy of the training set increased rapidly, but more importantly, the accuracy of the test set has been significantly improved, with the highest level staying at around 85\%.
+This directly shows that compared to MLP, CNN has made very significant progress on the CIFAR-10 data set, or by extension, the task of image classification.
+
+However, by observing the curve, we can easily find that CNN cannot get rid of the problem of over-fitting.
+As the number of training increases, after a brief decline, the test loss slowly rises. In fact, through training with default parameters, it can be found that this increase still exists after $1000+$ epochs.
+
+In general, CNN still has its limitations. If we want to achieve better accuracy, more appropriate structures and better optimization strategies are needed.
+
+\subsubsection{Optimizer Analysis}
+
+In the comparison of optimizers, I found that Adam, RMSprop, as an optimizer, has a very good learning effect,
+and the accuracy within the specified $200$ epochs can reach 85\% in the end; in contrast, the final accuracy of SGD is lower. Only at 78-80\%.
+
+After search the information, I found that the biggest difference is that both Adam and RMSprop use adaptive learning rate optimization algorithms and can dynamically adjust the learning rate.
+Such dynamic adjustment can not only ensure the efficiency of back propagation updates, but also prevent it from falling into the trap of local optimality like SGD.
+
+Among them, Adam adjusts the learning rate for each parameter based on the first and second moment estimates (mean and variance) of its gradient.
+And RMSprop adjusts the learning rate using the moving average of squared gradients, it uses the exponential decay average of squared gradients.
+
+In image classification, a task with deeper networks, an optimizer with more strategies and an adaptive learning rate is more suitable.
+If we really want to find the advantages of SGD, it may be the train speed is slightly faster.
+
+\subsubsection{Class Accuracy Analysis}
+
+Through the type accuracy I output, we can also find interesting phenomena:
+the overall classification accuracy of car, ship, truck, etc. is significantly higher, while the overall classification accuracy of dog, cat, bird, etc. is lower.
+
+We can make a bold guess: there are some similarities between animals, and cats and dogs themselves are especially similar. In contrast, frog, as an amphibian, does not seem to be similar so much.
+Therefore, we can see that in image classification tasks, our human intuitive feelings are also has hidden relationship with the feature of the data itself.
+
+\subsubsection{Learning Rate Analysis}
+
+Comparing the learning rates, we can see that appropriately increasing the learning rate ($1\mathrm{e}^{-3}$) can improve learning efficiency and speed up convergence (even with the assistance of Adam Optimizer).
+However, an inappropriately large learning rate ($5\mathrm{e}^{-2}$) makes the upper limit of accuracy convergence lower, and the curve oscillates very violently.
+The step when adjusting the parameters each time is too large, resulting in continuous missing of the extreme value, and only keeps oscillating near the extreme value, making it impossible to get close.
+
+This is why in practical deep learning, the learning rate should not be too large.
+
+\section{Part 3 Task 1}
+
+\subsection{Simple Introduction}
+
+In this task, I need to create a simple RNN following the given formula.
+I shall realize the RNN without \texttt{torch.nn.RNN} or \texttt{torch.nn.LSTM}
+
+\subsection{Structure Analyze}
+
+\subsubsection{RNN Modules}
+
+The requirement give series formula:
+
+\begin{align}
+    h^{(t)} &= \tanh{(W_{hx}x^{(t)} + W_{hh}h^{(t-1)} + b_h)} \label{eq:rnn_main} \\ 
+    o^{(t)} &= (W_{ph}h^{(t)} + b_o) \label{eq:rnn_ouput_layer} \\ 
+    {\tilde{y}^{(t)}} &= \text{softmax}(o^{(t)}) \label{eq:rnn_softmax}
+\end{align}
+
+According to these formula, I create 3 linear layer to realize the whole RNN operations:
+
+\begin{lstlisting}[language=Python]
+    # w_hx * xt + bh
+    self.hx = nn.Linear(input_dim, hidden_dim, bias=True)
+    # w_hh * h_(t-1)
+    self.hh = nn.Linear(hidden_dim, hidden_dim, bias=False)
+    # o_t = w_ph * h_t + b_o
+    self.ho = nn.Linear(hidden_dim, output_dim, bias=True)
+\end{lstlisting}
+
+And I will explain the function of them:
+
+\begin{enumerate}
+    \item hx: $1 \to 128$. Linear Layer with bias, implement equation \ref{eq:rnn_main} $x^{(t)}$ part, let new input digit to hidden layer size.
+    \item hh: $128 \to 128$. Linear Layer without bias, implement equation \ref{eq:rnn_main} $h^{(t-1)}$ part, let last time $h$ output get a weight in computation of new $h$.
+    \item ho: $128 \to 10$. Linear Layer with bias, implement equation \ref{eq:rnn_ouput_layer}. Get the final predicted number from $[0, 9]$.
+    \item a softmax layer, implement equation \ref{eq:rnn_softmax}
+\end{enumerate}
+
+\subsubsection{Forward Propagation}
+
+When doing forward propagation:
+
+\begin{lstlisting}[language=Python]
+def forward(self, x):
+    batch_size, input_length = x.size(0), x.size(1)
+    h_last = torch.zeros(batch_size, self.hidden_dim).to(self.device)
+    for t in range(input_length):
+        x_cur = x[:, t, :]
+        h_last = torch.tanh(self.hx(x_cur) + self.hh(h_last))
+    out = self.softmax(self.ho(h_last))
+    return out
+\end{lstlisting}
+
+I use a \texttt{for} loop to let the $x$ and previous $h$ participant the computation together, implement the RNN computation. And finally get the output.
+
+After forward propagation, let the max value of the $10$ dimension item become the prediction result. 

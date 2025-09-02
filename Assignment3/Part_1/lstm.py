@@ -1,16 +1,20 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import torch
 import torch.nn as nn
 
 
 ################################################################################
 
+
 class LSTM(nn.Module):
 
-    def __init__(self, seq_length, input_dim, hidden_dim, output_dim, device):
+    def __init__(
+        self,
+        seq_length: int,
+        input_dim: int,
+        hidden_dim: int,
+        output_dim: int,
+        device: torch.device,
+    ):
         super(LSTM, self).__init__()
         self.seq_length = seq_length
         self.input_dim = input_dim
@@ -32,7 +36,7 @@ class LSTM(nn.Module):
 
         self.ph = nn.Linear(hidden_dim, output_dim, bias=True)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         batch_size, input_length = x.size(0), x.size(1)
 
         h_last = torch.zeros(batch_size, self.hidden_dim, device=self.device)

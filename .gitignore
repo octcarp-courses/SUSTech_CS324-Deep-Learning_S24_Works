@@ -158,3 +158,87 @@ test.py
 # Submissions
 *.zip
 
+
+# latex
+
+## Core latex/pdflatex auxiliary files:
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+.*.lb
+
+## Intermediate documents:
+*.dvi
+*.xdv
+*-converted-to.*
+# these rules might exclude image files for figures etc.
+# *.ps
+# *.eps
+# *.pdf
+
+## Bibliography auxiliary files (bibtex/biblatex/biber):
+*.bbl
+*.bcf
+*.blg
+*-blx.aux
+*-blx.bib
+*.run.xml
+
+*.bbl-*
+*.bcf-*
+*.blg-*
+
+## Build tool auxiliary files:
+*.fdb_latexmk
+*.synctex
+*.synctex(busy)
+*.synctex.gz
+*.synctex.gz(busy)
+*.pdfsync
+
+## Build tool directories for auxiliary files
+# latexrun
+latex.out/
+
+## Auxiliary and intermediate files from other packages:
+# algorithms
+*.alg
+*.loa
+
+# achemso
+acs-*.bib
+
+# amsthm
+*.thm
+
+# beamer
+*.nav
+*.pre
+*.snm
+*.vrb
+
+# changes
+*.soc
+
+# comment
+*.cut
+
+# cprotect
+*.cpt
+
+# elsarticle (documentclass of Elsevier journals)
+*.spl
+
+# endnotes
+*.ent
+
+# fixme
+*.lox
