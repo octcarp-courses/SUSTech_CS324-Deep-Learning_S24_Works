@@ -50,10 +50,12 @@ Finally, I got output of size 10, indicating the possibility of each class in CI
 
 \subsubsection{Feature Analysis}
 
-Overall, we can find a very interesting situation: as the number of training times continues to increase, the accuracy of the training set quickly reached 90\%, while the accuracy of the test set stagnated at 50\% after a brief rise.
+Overall, we can find a very interesting situation:
+as the number of training times continues to increase, the accuracy of the training set quickly reached 90\%, while the accuracy of the test set stagnated at 50\% after a brief rise.
 Finally, it has been unable to rise. And by carefully observing the Loss curve, we will also find an additional fact: the Loss of the test set is even rising!
 
-This leads to an obvious concept: overfitting. With continuous training, MLP overfits the training data, and its parameters are constantly customized according to the training data,
+This leads to an obvious concept: overfitting.
+With continuous training, MLP overfits the training data, and its parameters are constantly customized according to the training data,
 but it loses generalization and cannot well extract some general features in the CIFAR-10 data set.
 
 So why is there such a big deviation in the performance of MLP on CIFAR-10 compared to the classification problem of Assignment1?

@@ -1,5 +1,10 @@
-# SUSTech_CS324-DL_2024s_Works
+## SUSTech_CS324-DL_2024s_Works
+
  Course code of CS324 2024 Spring: Deep Learning, SUSTech. Taught by Prof. Jianguo ZHANG.
+
+### Attention
+
+This code and report were created by the author during his initial studies of deep learning. As such, there may be some misunderstandings (or even errors) in the theoretical concepts and result analysis. This is provided for reference only.
 
 ### Content
 
@@ -15,13 +20,13 @@ You can use [environment.yml](environment.yml) to build a conda environment.
 
 #### Create Conda Environment
 
-```bash
+```shell
 conda env create -f environment.yml 
 ```
 
 #### Activate Conda Environment
 
-```bash
+```shell
 conda activate cs324   
 ```
 
@@ -36,6 +41,4 @@ If you have any problems, at least make sure the environment have these third-pa
 - [scikit-learn](https://scikit-learn.org/)
 - [Matplotlib](https://matplotlib.org/)
 - [tqdm](https://github.com/tqdm/tqdm)
-
-
 

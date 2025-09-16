@@ -45,21 +45,24 @@ Fig \ref{fig:p3_t=5} show a $T=5$ for RNN training, while fig \ref{fig:p3_t=20} 
 Through actual operations, I discovered a very strange situation: when training with $T=5$, 100\% accuracy can be achieved without the scheduler.
 After using the scheduler, this increase becomes very slow; on the contrary, in $ When T=20$, not using the scheduler will cause the model to degrade, but using it will keep the model 100\% accurate.
 
-I compare the training success and "failure" curves together and guess some possible reasons.
+I compare the training success and ``failure'' curves together and guess some possible reasons.
 
 \begin{itemize}
   \item {First, analyze $T=5$. We know that \texttt{StepLR} can multiply the learning rate with $\gamma$ after a certain steps.
       This multiplication may cause an exponential explosion after several times, and the learning rate gradually drops to a very small value.
-      Observing the normal curve without scheduler, we can find that the model reaches perfect accuracy after about 150 epochs. Therefore, if a scheduler is used, the model will not be able to effectively complete learning within a certain epoch, resulting in lower accuracy.
+      Observing the normal curve without scheduler, we can find that the model reaches perfect accuracy after about 150 epochs.
+      Therefore, if a scheduler is used, the model will not be able to effectively complete learning within a certain epoch, resulting in lower accuracy.
       But the learning rate still increased until the end.
     }
 
   \item {Second, for $T=20$, why does the accuracy become higher after using the scheduler?
-      Observing the failure curve which without using the scheduler, we can find that the accuracy of the model reached a very high value at the beginning, but as the training continued, the accuracy experienced several sudden drops, and loss also appeared corresponding rising.
+      Observing the failure curve which without using the scheduler, we can find that the accuracy of the model reached a very high value at the beginning,
+      but as the training continued, the accuracy experienced several sudden drops, and loss also appeared corresponding rising.
       My guess is that during the training process, it achieved very high accuracy at the beginning, but it did not perform a early stop, and gradient explosion occurred later.
       Although I used \texttt{clip\_grad\_norm\_()} correctly, it may be that the value of norm is too high, making it increasingly difficult to correct gradient explosion problem.
       Moreover, with the vanishing gradient problem caused by long dependencies of RNN, this makes correct learning more difficult.
-      The use of the scheduler may have corrected this unexpected: after the epoch rises and before the gradient explosion occurs, the learning rate has been reduced to a very low value, simulating a early stop,
+      The use of the scheduler may have corrected this unexpected:
+      after the epoch rises and before the gradient explosion occurs, the learning rate has been reduced to a very low value, simulating a early stop,
       so the impact of the gradient explosion has become very small, make it getting rid of significantly affect the entire model.
     }
 \end{itemize}

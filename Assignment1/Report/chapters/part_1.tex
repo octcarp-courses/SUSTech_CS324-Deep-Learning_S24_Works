@@ -18,49 +18,45 @@ In my code implementation, I simply insert a new column as the bias value.
 
 The perceptron decision is based on these formulas:
 $$
-    f(x) = sign(w\cdot x+b)
+  f(x) = sign(w\cdot x+b)
 $$
 
 $$
 sign(x)=
 \left\{
-    \begin{aligned}
-        +1 && \text{if $x \geq 0$}\\
-        -1 && \text{if $x < 0$}
-    \end{aligned}
+  \begin{aligned}
+    +1 && \text{if $x \geq 0$}\\
+    -1 && \text{if $x < 0$}
+  \end{aligned}
 \right.
 $$
 
 Components of a Perceptron:
 
 \begin{itemize}
-    \item Inputs (x): The features or data points provided to the perceptron.
-    \item Weights (w): Coefficients determining the importance of each input.
-    \item {Bias (b):
-    An extra input (always 1) with its own weight, allowing the activation function to shift, fitting the data better.
+  \item Inputs (x): The features or data points provided to the perceptron.
+  \item Weights (w): Coefficients determining the importance of each input.
+  \item {Bias (b):
+      An extra input (always 1) with its own weight, allowing the activation function to shift, fitting the data better.
     }
-    \item {Activation Function(sign function):
-    Decides whether the neuron should activate, typically a step function for basic perceptrons
+  \item {Activation Function(sign function):
+      Decides whether the neuron should activate, typically a step function for basic perceptrons
     }
 \end{itemize}
 
 \subsubsection{Loss Function}
 
-We need to design a loss function to compute the model loss, 
-
-% \begin{align*}
-
-% \end{align*}
+We need to design a loss function to compute the model loss,
 
 \begin{align*}
-    L_{1}(w,b) &= \sum_{i=1}^{N}-y_{i}*f(x_{i}) \textbf{ when } y_{i}*f(x_{1})<0 \\
-               &= \sum_{i=1}^{N}-y_{i}*sign(w*x_{i}+b) \textbf{ when } y_{i}*sign(w*x_{i}+b <0\\
-    L_{2}(w,b) &= \sum_{i=1}^{N}\frac{1}{||w||}|w*x_{i}+b| \textbf{ when } y_{i}*(w*x_{i}+b)<0\\
-               &= -\frac{1}{||w||}\sum_{i=1}^{N}y_{i}*(w*x_{i}+b) \textbf{ when } y_{i}*(w*x_{i}+b)<0
+  L_{1}(w,b) &= \sum_{i=1}^{N}-y_{i}*f(x_{i}) \textbf{ when } y_{i}*f(x_{1})<0 \\
+              &= \sum_{i=1}^{N}-y_{i}*sign(w*x_{i}+b) \textbf{ when } y_{i}*sign(w*x_{i}+b <0\\
+  L_{2}(w,b) &= \sum_{i=1}^{N}\frac{1}{||w||}|w*x_{i}+b| \textbf{ when } y_{i}*(w*x_{i}+b)<0\\
+              &= -\frac{1}{||w||}\sum_{i=1}^{N}y_{i}*(w*x_{i}+b) \textbf{ when } y_{i}*(w*x_{i}+b)<0
 \end{align*}
 
 Obviously, the first function just compute the number of misclassified points,
-it cannot be differentiated, so I choose $L_2$ as my loss function, 
+it cannot be differentiated, so I choose $L_2$ as my loss function,
 which expresses the total distance from the misclassified point to the hyperplane $S$.
 
 And we can ignore this coefficient $\frac{1}{||w||}$, the loss function is:
@@ -70,8 +66,8 @@ $$
 
 In this way, the derivation of Loss function is:
 \begin{align*}
-    \nabla_{w}L(w,b) &= -\sum_{x_{i} \in M}y_{i}x_{i}\\
-    \nabla_{b}L(w,b) &= -\sum_{x_{i} \in M}y_{i}
+  \nabla_{w}L(w,b) &= -\sum_{x_{i} \in M}y_{i}x_{i}\\
+  \nabla_{b}L(w,b) &= -\sum_{x_{i} \in M}y_{i}
 \end{align*}
 
 \subsubsection{Gradient Descent}
@@ -86,39 +82,39 @@ where $\gamma$ is the learning rate (usually 0.01).
 
 \subsubsection{Types of Gradient Descent}
 \begin{itemize}
-    \item {\textbf{Batch Gradient Descent (BGD)}:
-    In batch gradient descent,
-    model parameters are updated after computing the gradient of the cost function with respect to the entire training data set.
-    It involves computing the gradient of the cost function over the entire dataset at each iteration,
-    which can be computationally expensive for large datasets.
+  \item {\textbf{Batch Gradient Descent (BGD)}:
+      In batch gradient descent,
+      model parameters are updated after computing the gradient of the cost function with respect to the entire training data set.
+      It involves computing the gradient of the cost function over the entire dataset at each iteration,
+      which can be computationally expensive for large datasets.
     }
 
-    \item {\textbf{Stochastic Gradient Descent (SGD)}:
-    Unlike batch gradient descent,
-    stochastic gradient descent updates model parameters after computing the gradient of the cost function for only one randomly selected training example at a time.
-    Compared to batch gradient descent, this method is computationally cheaper, especially for large datasets,
-    since it only requires computing the gradient for a single example in each iteration.
+  \item {\textbf{Stochastic Gradient Descent (SGD)}:
+      Unlike batch gradient descent,
+      stochastic gradient descent updates model parameters after computing the gradient of the cost function for only one randomly selected training example at a time.
+      Compared to batch gradient descent, this method is computationally cheaper, especially for large datasets,
+      since it only requires computing the gradient for a single example in each iteration.
     }
 
-    \item {\textbf{Mini-Batch Gradient Descent}: Mini-batch gradient descent combines the advantages of batch gradient descent and SGD,
-    updating model parameters in each iteration based on a small random subset of the training data set.
-    This method strikes a balance between the computational efficiency of SGD and the stability of batch gradient descent.
+  \item {\textbf{Mini-Batch Gradient Descent}: Mini-batch gradient descent combines the advantages of batch gradient descent and SGD,
+      updating model parameters in each iteration based on a small random subset of the training data set.
+      This method strikes a balance between the computational efficiency of SGD and the stability of batch gradient descent.
     }
 \end{itemize}
 
-\subsubsection{The “standard” algorithm}
+\subsubsection{The ``standard'' algorithm}
 Given a training set $D = \{(x_{i},y_{i})\}, x_{i}\in \mathbb{R}^{N}, y_{i}\in \{-1,1\}$
 \begin{enumerate}
-    \item Initialize $w=0\in\mathbb{R}^{n}$
-    \item For epoch $= 1 \cdots T:$
-        \begin{enumerate}
-            \item Compute the predictions of Perceptron of the whole training set
-            \item Compute the gradient of the loss function with respect to $w$:
-            $$gradient = -\frac{1}{N}\sum(x_{i} \cdot y_{i}), for\ sample_{i}:p_{i}*y_{i}<0$$
-            where $p_{i}$ is $i$ th prediction, $y_{i}$ is the related ground truth of sample $i$, $N$ is the number of misclassified points
-            \item Update $w \leftarrow w - lr * gradient$
-        \end{enumerate}
-    \item Return $w$
+  \item Initialize $w=0\in\mathbb{R}^{n}$
+  \item For epoch $= 1 \cdots T:$
+    \begin{enumerate}
+      \item Compute the predictions of Perceptron of the whole training set
+      \item Compute the gradient of the loss function with respect to $w$:
+        $$gradient = -\frac{1}{N}\sum(x_{i} \cdot y_{i}), for\ sample_{i}:p_{i}*y_{i}<0$$
+        where $p_{i}$ is $i$ th prediction, $y_{i}$ is the related ground truth of sample $i$, $N$ is the number of misclassified points
+      \item Update $w \leftarrow w - lr * gradient$
+    \end{enumerate}
+  \item Return $w$
 \end{enumerate}
 
 \subsection{Results Display}
@@ -131,23 +127,23 @@ I generate 3 test example, the Table \ref{tab:p1feat} show the detailed informat
 They are the test ID, the mean of positive and negative samples, and the covariance of positive and negative samples.
 
 \begin{table}[!ht]
-\centering
-\caption{Data Set Feature}
-\label{tab:p1feat}
-\begin{tabular}{|l|c|c|c|c|c|} \hline
-ID & Mean Pos & Mean Neg & Cov Pos & Cov Neg   \\ \hline
-1 & [3, 3] & [15, 15] & [[2,0], [0,2]] & [[2,0], [0,2]] \\ \hline
-2 &	[3, 3] & [6, 6] & [[10,0], [0,10]] & [[10,0],[0,10]] \\ \hline
-3 &	[3, 3] & [4, 4] & [[2,0], [0,2]] & [[2,0], [0,2]] \\ \hline
-\end{tabular}
+  \centering
+  \caption{Data Set Feature}
+  \label{tab:p1feat}
+  \begin{tabular}{|l|c|c|c|c|c|} \hline
+    ID & Mean Pos & Mean Neg & Cov Pos & Cov Neg   \\ \hline
+    1 & [3, 3] & [15, 15] & [[2,0], [0,2]] & [[2,0], [0,2]] \\ \hline
+    2 &  [3, 3] & [6, 6] & [[10,0], [0,10]] & [[10,0],[0,10]] \\ \hline
+    3 &  [3, 3] & [4, 4] & [[2,0], [0,2]] & [[2,0], [0,2]] \\ \hline
+  \end{tabular}
 \end{table}
 
 \subsubsection{Default Parameters}
 
 \begin{itemize}
-    \item \texttt{n\_inputs}: $2$, number of inputs
-    \item \texttt{max\_epochs}: $100$, maximum number of training cycles
-    \item \texttt{learning\_rate}: $0.01$, magnitude of weight changes at each training cycle
+  \item \texttt{n\_inputs}: $2$, number of inputs
+  \item \texttt{max\_epochs}: $100$, maximum number of training cycles
+  \item \texttt{learning\_rate}: $0.01$, magnitude of weight changes at each training cycle
 \end{itemize}
 
 \subsubsection{Data Visualization}
@@ -168,9 +164,9 @@ ID & Mean Pos & Mean Neg & Cov Pos & Cov Neg   \\ \hline
 
 
 
-Figure \ref{fig:p1test1},  show us an example of data visualization for the data and train. 
+Figure \ref{fig:p1test1},  show us an example of data visualization for the data and train.
 
-Also, you can check Figure \ref{fig:p1test2}, Figure \ref{fig:p1test3} in Appendix section. 
+Also, you can check Figure \ref{fig:p1test2}, Figure \ref{fig:p1test3} in Appendix section.
 
 \subsection{Results Analysis}
 
@@ -179,9 +175,9 @@ Also, you can check Figure \ref{fig:p1test2}, Figure \ref{fig:p1test3} in Append
 Actually, the 3 test case corresponding to 3 different situations:
 
 \begin{enumerate}
-    \item The mean difference is large, and the respective variances are small.
-    \item The variances are both large.
-    \item The mean difference is small.
+  \item The mean difference is large, and the respective variances are small.
+  \item The variances are both large.
+  \item The mean difference is small.
 \end{enumerate}
 
 \subsubsection{Training Loss and Accuracy Analysis}
@@ -193,18 +189,18 @@ the classification is more accurate and the training results are better.
 The latter two case lead to two different situation:
 
 \begin{itemize}
-    \item {\textbf{The variances are both large}: 
-    Although the difference between the means may be large enough,
-    excessive variance will cause the data to deviate more from the mean.
-    his will lead to a possible situation: positive and negative samples are each generated near the mean of the other party.
+  \item {\textbf{The variances are both large}:
+      Although the difference between the means may be large enough,
+      excessive variance will cause the data to deviate more from the mean.
+      his will lead to a possible situation: positive and negative samples are each generated near the mean of the other party.
     }
-    \item {\textbf{The mean difference is small}:
-     In this case, the points of the two types of samples will be mixed together,
-     making it difficult to find a suitable way to classify them accurately.
+  \item {\textbf{The mean difference is small}:
+      In this case, the points of the two types of samples will be mixed together,
+      making it difficult to find a suitable way to classify them accurately.
     }
 \end{itemize}
 
-In both cases, one type of data acts like a "spy" masquerading as the other's sample points.
+In both cases, one type of data acts like a ``spy'' masquerading as the other's sample points.
 It is easy to be predicted by Perceptron as the other party's sample point during training,
 conflicting with its own label,
 causing training confusion and leading to problems.
@@ -212,7 +208,7 @@ causing training confusion and leading to problems.
 Intuitively, this is because the latter two case will cause the possible areas of positive and negative sample points to overlap too high,
 making it difficult (or even impossible) to find a decision boundary to completely separate the two samples.
 
-As training data continues to increase, it does not improve Perceptron's training efficiency. 
+As training data continues to increase, it does not improve Perceptron's training efficiency.
 Instead, it continues to bring confusing and misleading information.
 
 This results in Perceptron constantly adjusting its weight and bias to fit the training data during the training process, and making it difficult to converge to a stable value.

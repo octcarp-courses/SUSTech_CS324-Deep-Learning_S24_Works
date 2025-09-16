@@ -94,11 +94,13 @@ This mutual approve both of my implementations within this simple MLP structure 
 
 \subsubsection{Dataset Analysis}
 
-Simple analysis: The model has different performance in three data sets: the data set of blobs is widely separated, and it is easy to achieve high performance; moon is second.
+Simple analysis:
+The model has different performance in three data sets: the data set of blobs is widely separated, and it is easy to achieve high performance; moon is second.
 For gaussian quantiles, intuitively speaking, the data distribution of it cannot be divided by a simple decision boundary, and accordingly the accuracy increases relatively slowly with training.
 
 \subsubsection{Loss Analysis}\label{sec:p1t1_ana_loss}
 
-Although I utilized \texttt{optim.SGD()} as the optimizer, I actually realize the BGD. I did not perform any data splitting during input; instead, I fed all inputs as a whole to the MLP for computation.
+Although I utilized \texttt{optim.SGD()} as the optimizer, I actually realize the BGD.
+I did not perform any data splitting during input; instead, I fed all inputs as a whole to the MLP for computation.
 Therefore, in practice, what I achieved was finding the global optimum through gradient descent, which is the concept of Batch Gradient Descent (BGD).
 From this, it can be inferred that the descent of the training loss curve is smooth, devoid of any fluctuations.
